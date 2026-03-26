@@ -1,0 +1,9 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "org.exampleSA.beyond_integration.mixin.coe",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "beyond_integration.refmap.json",
+  "mixins": [],
+  "client": []
+}
