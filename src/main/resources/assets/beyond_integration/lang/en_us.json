@@ -18,6 +18,9 @@
   "command.beyond_integration.network.info.slot_capacity": "Slot Capacity (per type)",
   "command.beyond_integration.network.info.slot_max_size": "Slot Max Size (types)",
   "command.beyond_integration.network.info.current_time": "Crystal Gen Time",
+  "command.beyond_integration.network.info.item_types": "Item Types",
+  "command.beyond_integration.network.info.total_items": "Total Items",
+  "command.beyond_integration.network.info.no_players": "No players",
   "command.beyond_integration.network.info.not_exist": "Network does not exist: netId=%s",
   "command.beyond_integration.network.generateItems.success": "Generated %s types of items, total %s items inserted into network %s",
   "command.beyond_integration.network.generateItems.with_enchantments": "With enchantments",
@@ -31,5 +34,9 @@
   "command.beyond_integration.network.giveTerminal.not_exist": "Network does not exist: netId=%s",
   "command.beyond_integration.error.server_not_available": "Server not available.",
   "command.beyond_integration.error.player_required": "This command must be run by a player.",
-  "command.beyond_integration.error.item_not_found": "Portable network terminal item not found."
+  "command.beyond_integration.error.item_not_found": "Portable network terminal item not found.",
+  "command.beyond_integration.network.list.page": "Page %s",
+  "command.beyond_integration.network.list.previous": "◀ Previous",
+  "command.beyond_integration.network.list.next": "Next ▶",
+  "command.beyond_integration.network.list.page_with_total": "Page %s/%s (Total: %s networks)"
 }

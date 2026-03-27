@@ -85,8 +85,20 @@ public class CommandLang
                 CommandConfig.Language.ZH_CN, "槽位数量 (种类)");
 
         register("network.info.current_time",
-                CommandConfig.Language.EN_US, "Crystal Gen Time",
-                CommandConfig.Language.ZH_CN, "结晶生成时间");
+                CommandConfig.Language.EN_US, "Crystal Remaining Time",
+                CommandConfig.Language.ZH_CN, "结晶剩余生成时间");
+
+        register("network.info.item_types",
+                CommandConfig.Language.EN_US, "Item Types",
+                CommandConfig.Language.ZH_CN, "物品种类");
+
+        register("network.info.total_items",
+                CommandConfig.Language.EN_US, "Total Items",
+                CommandConfig.Language.ZH_CN, "物品总数");
+
+        register("network.info.no_players",
+                CommandConfig.Language.EN_US, "No players",
+                CommandConfig.Language.ZH_CN, "无玩家");
 
         register("network.info.not_exist",
                 CommandConfig.Language.EN_US, "Network does not exist: netId=%s",
@@ -148,13 +160,21 @@ public class CommandLang
                 CommandConfig.Language.EN_US, "=== All Dimension Networks ===",
                 CommandConfig.Language.ZH_CN, "=== 所有维度网络 ===");
                 
-        register("network.list.page_info",
+        register("network.list.page",
+                CommandConfig.Language.EN_US, "Page %s",
+                CommandConfig.Language.ZH_CN, "第 %s 页");
+                
+        register("network.list.previous",
+                CommandConfig.Language.EN_US, "◀ Previous",
+                CommandConfig.Language.ZH_CN, "◀ 上一页");
+                
+        register("network.list.next",
+                CommandConfig.Language.EN_US, "Next ▶",
+                CommandConfig.Language.ZH_CN, "下一页 ▶");
+                
+        register("network.list.page_with_total",
                 CommandConfig.Language.EN_US, "Page %s/%s (Total: %s networks)",
                 CommandConfig.Language.ZH_CN, "第 %s/%s 页 (总计: %s 个网络)");
-                
-        register("network.list.next_page",
-                CommandConfig.Language.EN_US, "Use '/bdtools network list %s' for next page",
-                CommandConfig.Language.ZH_CN, "使用 '/bdtools network list %s' 查看下一页");
     }
 
     private static void register(String key, CommandConfig.Language lang1, String text1, CommandConfig.Language lang2, String text2)
