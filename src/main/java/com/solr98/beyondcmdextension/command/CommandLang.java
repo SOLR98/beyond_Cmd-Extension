@@ -13,12 +13,12 @@ public class CommandLang
     static
     {
         register("network.list.title",
-                CommandConfig.Language.EN_US, "====== Dimension Networks ",
-                CommandConfig.Language.ZH_CN, "========= 维度网络列表 ");
+                CommandConfig.Language.EN_US, "====== Dimension Networks ======",
+                CommandConfig.Language.ZH_CN, "========= 维度网络列表 =========");
 
         register("network.list.all_title",
-                CommandConfig.Language.EN_US, "====== All Dimension Networks ",
-                CommandConfig.Language.ZH_CN, "========= 所有维度网络 ");
+                CommandConfig.Language.EN_US, "====== All Dimension Networks ======",
+                CommandConfig.Language.ZH_CN, "========= 所有维度网络 =========");
 
         register("network.list.owner",
                 CommandConfig.Language.EN_US, "Owner",
@@ -182,6 +182,10 @@ public class CommandLang
                 CommandConfig.Language.EN_US, "Error opening GUI: %s",
                 CommandConfig.Language.ZH_CN, "打开界面时出错: %s");
 
+        register("network.open.error.failed",
+                CommandConfig.Language.EN_US, "Failed to open interface",
+                CommandConfig.Language.ZH_CN, "打开界面失败");
+
         register("error.not_in_network",
                 CommandConfig.Language.EN_US, "You are not in any network.",
                 CommandConfig.Language.ZH_CN, "您不在任何网络中。");
@@ -197,6 +201,22 @@ public class CommandLang
         register("error.network_id_limit",
                 CommandConfig.Language.EN_US, "Cannot find available network ID (may have reached the limit of 10000)",
                 CommandConfig.Language.ZH_CN, "无法找到可用的网络ID（可能已达到上限10000）");
+
+        register("network.batchCreate.error.no_available_id",
+                CommandConfig.Language.EN_US, "Cannot find available network ID",
+                CommandConfig.Language.ZH_CN, "无法找到可用网络ID");
+
+        register("network.batchCreate.error.creation_failed",
+                CommandConfig.Language.EN_US, "Network #%s: Creation failed (player may already have a network)",
+                CommandConfig.Language.ZH_CN, "网络#%s: 创建失败（玩家可能已有网络）");
+
+        register("network.batchCreate.error.general_failure",
+                CommandConfig.Language.EN_US, "Network #%s: %s",
+                CommandConfig.Language.ZH_CN, "网络#%s: %s");
+
+        register("network.batchCreate.error.no_networks_created",
+                CommandConfig.Language.EN_US, "No networks were created",
+                CommandConfig.Language.ZH_CN, "未创建任何网络");
 
         register("network.open.menu.storage",
                 CommandConfig.Language.EN_US, "Network Storage",
@@ -239,8 +259,8 @@ public class CommandLang
                 CommandConfig.Language.ZH_CN, "以下玩家已在网络中: %s");
 
         register("network.batchAddPlayer.success",
-                CommandConfig.Language.EN_US, "Successfully added player %s as %s to %s network(s)",
-                CommandConfig.Language.ZH_CN, "成功添加玩家 %s 为%s到 %s 个网络");
+                CommandConfig.Language.EN_US, "Successfully added %s/%s players as %s to network %s",
+                CommandConfig.Language.ZH_CN, "成功添加 %s/%s 名玩家为%s到网络 %s");
 
         register("network.batchAddPlayer.already_in_networks",
                 CommandConfig.Language.EN_US, "Player already in network(s): %s",
@@ -267,8 +287,8 @@ public class CommandLang
                 CommandConfig.Language.ZH_CN, "未指定网络");
 
         register("network.batchAddToNetworks.success",
-                CommandConfig.Language.EN_US, "Successfully added %s players as %s to %s network(s)",
-                CommandConfig.Language.ZH_CN, "成功添加 %s 名玩家为%s到 %s 个网络");
+                CommandConfig.Language.EN_US, "Successfully added %s/%s players as %s",
+                CommandConfig.Language.ZH_CN, "成功添加 %s/%s 名玩家为%s");
 
         register("network.batchAddToNetworks.already_in_network",
                 CommandConfig.Language.EN_US, "Players already in network(s):",
@@ -277,6 +297,14 @@ public class CommandLang
         register("network.batchAddToNetworks.no_permission",
                 CommandConfig.Language.EN_US, "No permission to add players to network(s):",
                 CommandConfig.Language.ZH_CN, "无权限添加玩家到以下网络:");
+
+        register("error.add_player_failed",
+                CommandConfig.Language.EN_US, "Failed to add player: %s",
+                CommandConfig.Language.ZH_CN, "添加玩家失败: %s");
+
+        register("error.remove_player_failed",
+                CommandConfig.Language.EN_US, "Failed to remove player: %s",
+                CommandConfig.Language.ZH_CN, "移除玩家失败: %s");
 
         register("network.batchAddToNetworks.failed",
                 CommandConfig.Language.EN_US, "Failed to add players to network(s):",
@@ -353,8 +381,8 @@ public class CommandLang
                 CommandConfig.Language.ZH_CN, "以下玩家不在网络中: %s");
 
         register("network.batchRemove.success",
-                CommandConfig.Language.EN_US, "Successfully removed %s players from network %s: %s",
-                CommandConfig.Language.ZH_CN, "成功从网络 %s 移除 %s 个玩家: %s");
+                CommandConfig.Language.EN_US, "Successfully removed %s players from network %s",
+                CommandConfig.Language.ZH_CN, "成功从网络 %s 移除 %s 个玩家");
 
         register("network.generateResources.success",
                 CommandConfig.Language.EN_US, "Generated %s resources of type %s, total %s inserted into network %s",
@@ -414,6 +442,10 @@ public class CommandLang
                 CommandConfig.Language.EN_US, "Owner: %s | Status: ",
                 CommandConfig.Language.ZH_CN, "所有者: %s | 状态: ");
 
+        register("network.info.your_permission_label",
+                CommandConfig.Language.EN_US, " | Your Permission: ",
+                CommandConfig.Language.ZH_CN, " | 你的权限: ");
+
         register("network.info.status.active",
                 CommandConfig.Language.EN_US, "Active",
                 CommandConfig.Language.ZH_CN, "活跃");
@@ -469,6 +501,68 @@ public class CommandLang
         register("network.info.no_players",
                 CommandConfig.Language.EN_US, "No players",
                 CommandConfig.Language.ZH_CN, "无玩家");
+        
+        // NBT大小信息（OP手动触发）
+        register("network.info.nbt_section_title",
+                CommandConfig.Language.EN_US, "=== NBT Data Analysis (Manually Triggered) ===",
+                CommandConfig.Language.ZH_CN, "=== NBT数据分析（手动触发） ===");
+        
+        register("network.info.nbt_calculation_failed",
+                CommandConfig.Language.EN_US, "  Failed to calculate NBT size",
+                CommandConfig.Language.ZH_CN, "  计算NBT大小失败");
+        
+        register("network.info.nbt_size",
+                CommandConfig.Language.EN_US, "  NBT Item Types: %s, Total Size: %s",
+                CommandConfig.Language.ZH_CN, "  NBT物品种类: %s, 总大小: %s");
+        
+        register("network.info.no_nbt_data",
+                CommandConfig.Language.EN_US, "  No NBT data found",
+                CommandConfig.Language.ZH_CN, "  未找到NBT数据");
+        
+        register("network.info.nbt_large_warning",
+                CommandConfig.Language.EN_US, "  Warning: Large NBT data detected (>1GB)!",
+                CommandConfig.Language.ZH_CN, "  警告: 检测到大量NBT数据（>1GB）！");
+        
+        register("network.info.nbt_note",
+                CommandConfig.Language.EN_US, "  Note: NBT analysis only includes items with NBT tags.",
+                CommandConfig.Language.ZH_CN, "  注意: NBT分析只包括带有NBT标签的物品。");
+        
+        // NBT提示框文本
+        register("network.info.nbt_hover_title",
+                CommandConfig.Language.EN_US, "NBT Data Details:",
+                CommandConfig.Language.ZH_CN, "NBT数据详情：");
+        
+        register("network.info.nbt_hover_unique_types",
+                CommandConfig.Language.EN_US, "Unique item types with NBT: ",
+                CommandConfig.Language.ZH_CN, "有NBT的物品种类：");
+        
+        register("network.info.nbt_hover_total_items",
+                CommandConfig.Language.EN_US, "Total items with NBT: ",
+                CommandConfig.Language.ZH_CN, "有NBT的物品总数：");
+        
+        register("network.info.nbt_hover_exact_size",
+                CommandConfig.Language.EN_US, "Exact size: ",
+                CommandConfig.Language.ZH_CN, "精确大小：");
+        
+        register("network.info.nbt_hover_formatted_size",
+                CommandConfig.Language.EN_US, "Formatted size: ",
+                CommandConfig.Language.ZH_CN, "格式化大小：");
+        
+        register("network.info.nbt_hover_note",
+                CommandConfig.Language.EN_US, "\nNote: NBT calculation only includes items with NBT tags.",
+                CommandConfig.Language.ZH_CN, "\n注意: NBT计算只包括带有NBT标签的物品。");
+
+        register("display.empty_item",
+                CommandConfig.Language.EN_US, "Empty",
+                CommandConfig.Language.ZH_CN, "空");
+
+        register("display.empty_fluid",
+                CommandConfig.Language.EN_US, "Empty Fluid",
+                CommandConfig.Language.ZH_CN, "空流体");
+
+        register("network.info.no_permission",
+                CommandConfig.Language.EN_US, "No Permission",
+                CommandConfig.Language.ZH_CN, "无权限");
 
         // 自动合成命令相关文本
         register("network.craft.success",
@@ -744,6 +838,22 @@ public class CommandLang
         register("error.player_required_for_command",
                 CommandConfig.Language.EN_US, "This command must be executed by a player",
                 CommandConfig.Language.ZH_CN, "此命令必须由玩家执行");
+
+        register("error.unsupported_player_selector",
+                CommandConfig.Language.EN_US, "Unsupported player selector: %s",
+                CommandConfig.Language.ZH_CN, "不支持的玩家选择器: %s");
+
+        register("error.cannot_parse_player_selector",
+                CommandConfig.Language.EN_US, "Cannot parse player selector: %s",
+                CommandConfig.Language.ZH_CN, "无法解析玩家选择器: %s");
+
+        register("error.invalid_network_id_or_player",
+                CommandConfig.Language.EN_US, "Invalid network ID or player name: %s",
+                CommandConfig.Language.ZH_CN, "无效的网络ID或玩家名: %s");
+
+        register("error.player_not_in_any_network",
+                CommandConfig.Language.EN_US, "Player %s is not in any network",
+                CommandConfig.Language.ZH_CN, "玩家 %s 不在任何网络中");
         
         register("error.network_transfer_disabled",
                 CommandConfig.Language.EN_US, "Network transfer functionality is disabled. Please set enableNetworkTransfer=true in config file and restart server.",
@@ -774,6 +884,19 @@ public class CommandLang
         register("error.enchantment_book_not_implemented",
                 CommandConfig.Language.EN_US, "Enchantment book giving functionality is not yet implemented",
                 CommandConfig.Language.ZH_CN, "给予附魔书功能暂未实现");
+
+        register("network.tools.giveEnchantedBooks.success",
+                CommandConfig.Language.EN_US, "Gave %s %s enchanted books",
+                CommandConfig.Language.ZH_CN, "已给予 %s %s 本附魔书");
+        
+        // 插入命令错误
+        register("error.item_required",
+                CommandConfig.Language.EN_US, "Item argument is required",
+                CommandConfig.Language.ZH_CN, "需要指定物品参数");
+        
+        register("error.fluid_required",
+                CommandConfig.Language.EN_US, "Fluid argument is required",
+                CommandConfig.Language.ZH_CN, "需要指定流体参数");
         
         // 资源生成结果
         register("network.generate.result.title",
@@ -791,6 +914,18 @@ public class CommandLang
         register("network.generate.result.energy",
                 CommandConfig.Language.EN_US, "  Energy: %s types, %s FE total",
                 CommandConfig.Language.ZH_CN, "  能量: %s 种, 总量: %s FE");
+
+        register("network.generate.result.enchantments",
+                CommandConfig.Language.EN_US, "  Enchantments: %s items with %s enchantments total",
+                CommandConfig.Language.ZH_CN, "  附魔: %s 个物品带有 %s 个附魔");
+
+        register("network.generate.result.nbt_size",
+                CommandConfig.Language.EN_US, "  NBT Data: %s items with NBT, estimated size: %s",
+                CommandConfig.Language.ZH_CN, "  NBT数据: %s 个物品带有NBT, 估算大小: %s");
+
+        register("network.generate.result.nbt_warning",
+                CommandConfig.Language.EN_US, "  Warning: Complex NBT may affect performance and storage",
+                CommandConfig.Language.ZH_CN, "  警告: 复杂NBT可能影响性能和存储");
         
         // 分页导航
         register("pagination.click_to_page",
@@ -846,6 +981,10 @@ public class CommandLang
                 CommandConfig.Language.ZH_CN, "<1秒");
         
         // 插入操作成功消息
+        register("network.insert.item.success",
+                CommandConfig.Language.EN_US, "Inserted %s of %s into network %s",
+                CommandConfig.Language.ZH_CN, "已向网络 %3$s 插入 %1$s 个 %2$s");
+        
         register("network.insert.fluid.success",
                 CommandConfig.Language.EN_US, "Inserted %s mB of %s into network %s",
                 CommandConfig.Language.ZH_CN, "已向网络 %3$s 插入 %1$s mB 的 %2$s");
@@ -866,6 +1005,11 @@ public class CommandLang
         register("network.create.warning.failed_with_error",
                 CommandConfig.Language.EN_US, "Warning: Failed to create network #%s for player %s: %s",
                 CommandConfig.Language.ZH_CN, "警告: 无法为玩家 %2$s 创建网络 #%1$s: %3$s");
+        
+        // 功能移除消息
+        register("error.feature_removed",
+                CommandConfig.Language.EN_US, "This feature has been removed: %s",
+                CommandConfig.Language.ZH_CN, "此功能已被移除: %s");
     }
 
     private static void register(String key, CommandConfig.Language lang1, String text1, CommandConfig.Language lang2, String text2)
