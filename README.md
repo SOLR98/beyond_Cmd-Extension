@@ -1,6 +1,6 @@
 # Beyond:Cmd Extension
 
-一个为 **Beyond Dimensions** 模组提供强大命令管理功能的 Minecraft Forge 模组。
+一个为 **Beyond Dimensions** 模组提供强大命令管理功能的 Minecraft Forge 模组。(完全由deepseek编写）
 
 ## ✨ 功能特性
 
@@ -191,7 +191,7 @@ src/main/java/com/solr98/beyondcmdextension/
 │   ├── member/                       # 成员命令
 │   └── util/                         # 工具类
 ├── handler/                          # 事件处理器
-└── client/                           # 客户端代码
+└── client/                           # 客户端代码 （未来会尝试提供客户端功能）
 ```
 
 ## 🔍 技术细节
@@ -202,7 +202,7 @@ src/main/java/com/solr98/beyondcmdextension/
 - **管理权限**: 区分所有者和管理员权限
 
 ### 输出格式化
-- **SI单位制**: 使用 K, M, G, T, P, E 单位
+- **SI单位制**: 使用 K, M, G, T, P, E 单位 （这玩意可不好决定所以就按照国际单位制（SI）的数值单位了）
 - **悬停文本**: 丰富的鼠标悬停信息
 - **分页系统**: 支持大量数据的分页显示
 
