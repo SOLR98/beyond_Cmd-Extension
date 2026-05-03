@@ -113,7 +113,38 @@ public class Config {
             .comment("Enable network-to-network item transfer feature (requires restart)")
             .define("enableNetworkTransfer", false);
 
+    // ========== 物品黑名单配置 ==========
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_ITEM_BLACKLIST = BUILDER
+            .comment("Enable item blacklist to prevent specific items from being inserted into networks")
+            .define("enableItemBlacklist", false);
+
+    private static final ForgeConfigSpec.ConfigValue<List<? extends String>> ITEM_BLACKLIST = BUILDER
+            .comment("List of items blocked from network insertion (format: 'modid:item_id')")
+            .defineList("itemBlacklist",
+                Arrays.asList(
+                    "minecraft:barrier",
+                    "minecraft:command_block",
+                    "minecraft:structure_block",
+                    "minecraft:structure_void",
+                    "minecraft:jigsaw",
+                    "minecraft:bedrock",
+                    "minecraft:end_portal_frame",
+                    "minecraft:spawner"
+                ),
+                obj -> obj instanceof String);
+
+    // ========== 网络合成频率限制 ==========
+
+    private static final ForgeConfigSpec.IntValue CRAFT_COOLDOWN_MS = BUILDER
+            .comment("Minimum interval in milliseconds between craft requests from the same player (0 to disable)")
+            .defineInRange("craftCooldownMs", 1000, 0, 60000);
+
+    // ========== 配方树深度限制 ==========
+
+    private static final ForgeConfigSpec.IntValue CRAFT_MAX_DEPTH = BUILDER
+            .comment("Maximum recursion depth for recipe tree resolution")
+            .defineInRange("craftMaxDepth", 6, 1, 20);
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
@@ -128,6 +159,10 @@ public class Config {
     public static String costFormula;
     public static boolean useFormula;
     public static boolean enableNetworkTransfer;
+    public static boolean enableItemBlacklist;
+    public static List<? extends String> itemBlacklist;
+    public static int craftCooldownMs;
+    public static int craftMaxDepth;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -142,5 +177,9 @@ public class Config {
         costFormula = COST_FORMULA.get();
         useFormula = USE_FORMULA.get();
         enableNetworkTransfer = ENABLE_NETWORK_TRANSFER.get();
+        enableItemBlacklist = ENABLE_ITEM_BLACKLIST.get();
+        itemBlacklist = ITEM_BLACKLIST.get();
+        craftCooldownMs = CRAFT_COOLDOWN_MS.get();
+        craftMaxDepth = CRAFT_MAX_DEPTH.get();
     }
 }

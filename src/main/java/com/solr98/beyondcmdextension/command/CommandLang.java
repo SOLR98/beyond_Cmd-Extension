@@ -734,6 +734,10 @@ public class CommandLang
         register("error.crafting_disabled",
                 CommandConfig.Language.EN_US, "Crafting functionality is disabled in configuration",
                 CommandConfig.Language.ZH_CN, "合成功能已在配置中禁用");
+
+        register("error.craft_cooldown",
+                CommandConfig.Language.EN_US, "Please wait before sending another craft request",
+                CommandConfig.Language.ZH_CN, "请等待后再发送合成请求");
         
         // 传输相关错误消息
         register("error.amount_must_be_positive",

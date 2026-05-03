@@ -1,6 +1,7 @@
 package com.solr98.beyondcmdextension;
 
 import com.mojang.logging.LogUtils;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -48,12 +49,32 @@ public class Beyond_cmd_extension {
         
         // Register enchantment book separator handler
         registerEnchantmentBookSeparator();
+        // Register item blacklist handler
+        registerItemBlacklistHandler();
+        // Register ammo box extract handler (only if TACZ is loaded)
+        registerAmmoBoxExtractHandler();
+        // Register network packets
+        com.solr98.beyondcmdextension.network.PacketHandler.register();
     }
     
     private void registerEnchantmentBookSeparator() {
         com.wintercogs.beyonddimensions.api.dimensionnet.helper.UnifiedStorageBeforeInsertHandler
                 .addHandler(new com.solr98.beyondcmdextension.handler.EnchantmentBookSeparatorHandler());
         LOGGER.info("Registered EnchantmentBookSeparatorHandler");
+    }
+
+    private void registerItemBlacklistHandler() {
+        com.wintercogs.beyonddimensions.api.dimensionnet.helper.UnifiedStorageBeforeInsertHandler
+                .addHandler(new com.solr98.beyondcmdextension.handler.ItemBlacklistHandler());
+        LOGGER.info("Registered ItemBlacklistHandler");
+    }
+
+    private void registerAmmoBoxExtractHandler() {
+        if (ModList.get().isLoaded("tacz")) {
+            com.wintercogs.beyonddimensions.api.dimensionnet.helper.UnifiedStorageBeforeInsertHandler
+                    .addHandler(new com.solr98.beyondcmdextension.handler.AmmoBoxExtractHandler());
+            LOGGER.info("Registered AmmoBoxExtractHandler");
+        }
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
