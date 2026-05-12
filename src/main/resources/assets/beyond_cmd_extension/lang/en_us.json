@@ -38,5 +38,18 @@
   "command.beyond_cmd_extension.network.list.page": "Page %s",
   "command.beyond_cmd_extension.network.list.previous": "◀ Previous",
   "command.beyond_cmd_extension.network.list.next": "Next ▶",
-  "command.beyond_cmd_extension.network.list.page_with_total": "Page %s/%s (Total: %s networks)"
+  "command.beyond_cmd_extension.network.list.page_with_total": "Page %s/%s (Total: %s networks)",
+  "gui.beyond_cmd_extension.mode.network": "Current: Network mode\nClick to switch to vanilla",
+  "gui.beyond_cmd_extension.mode.vanilla": "Current: Vanilla mode\nClick to switch to network",
+  "gui.beyond_cmd_extension.output.inventory": "Output to inventory",
+  "gui.beyond_cmd_extension.output.network": "Output to network #%s",
+  "gui.beyond_cmd_extension.network.connected": "Network #%s",
+  "gui.beyond_cmd_extension.network.none": "No network",
+  "message.beyond_cmd_extension.no_network": "§cYou don't have a dimension network",
+  "message.beyond_cmd_extension.sentry_no_gun": "§cNo gun installed on the sentry",
+  "message.beyond_cmd_extension.network_no_ammo": "Network §b%s§r has no available ammo",
+  "message.beyond_cmd_extension.material_insufficient": "§cInsufficient materials: %s",
+  "command.beyond_cmd_extension.error.unknown": "Unknown",
+  "hud.beyond_cmd_extension.network_ammo": "Net#%s : %s",
+  "hud.beyond_cmd_extension.network_ammo.infinite": "Net#%s : ∞"
 }

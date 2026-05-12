@@ -6,22 +6,44 @@ import com.solr98.beyondcmdextension.network.RequestNetworkItemsPacket;
 import com.solr98.beyondcmdextension.network.TaczCraftPacket;
 import com.tacz.guns.client.gui.GunSmithTableScreen;
 import com.tacz.guns.crafting.GunSmithTableRecipe;
+import com.tacz.guns.inventory.GunSmithTableMenu;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(GunSmithTableScreen.class)
-public class GunSmithTableScreenMixin {
+@Mixin(value = GunSmithTableScreen.class, remap = false)
+public abstract class GunSmithTableScreenMixin extends AbstractContainerScreen<GunSmithTableMenu> {
+
+    protected GunSmithTableScreenMixin(GunSmithTableMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title);
+    }
+
+    @Unique
+    private static boolean beyond$loaded = false;
+    @Unique
+    private static boolean beyond$hasTaczAddon;
+    @Unique
+    private static boolean beyond$compatChecked = false;
+    @Unique
+    private boolean beyond$useNetwork = true;
 
     @Shadow(remap = false)
     private Int2IntArrayMap playerIngredientCount;
@@ -29,120 +51,281 @@ public class GunSmithTableScreenMixin {
     @Shadow(remap = false)
     private GunSmithTableRecipe selectedRecipe;
 
-    @Inject(method = "init", at = @At("TAIL"), remap = false)
-    private void onInit(CallbackInfo ci) {
-        var screen = (GunSmithTableScreen) (Object) this;
-        if (NetworkItemCache.isEmpty()) {
-            PacketHandler.sendToServer(new RequestNetworkItemsPacket());
-        }
+    @Shadow(remap = false)
+    private void getPlayerIngredientCount(GunSmithTableRecipe recipe) {}
 
-        ResourceLocation taczTex = ResourceLocation.tryBuild("tacz", "textures/gui/gun_smith_table.png");
-        var btn = new Button(screen.getGuiLeft() + 267, screen.getGuiTop() + 162, 18, 18,
-                Component.empty(), b -> {
-            if (selectedRecipe != null && NetworkItemCache.hasNetwork()) {
-                int count = 1;
-                if (Screen.hasShiftDown()) {
-                    int max = Integer.MAX_VALUE;
-                    var ingr = selectedRecipe.getInputs();
-                    for (int i = 0; i < ingr.size(); i++) {
-                        int need = ingr.get(i).getCount();
-                        if (need <= 0) continue;
-                        int have = playerIngredientCount.get(i);
-                        max = Math.min(max, have / need);
-                    }
-                    count = Math.max(1, max);
-                } else if (Screen.hasControlDown()) {
-                    count = 10;
-                }
-                PacketHandler.sendToServer(new TaczCraftPacket(selectedRecipe.getId(), count));
-            }
-        }, s -> Component.empty()) {
-            @Override
-            public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
-                boolean hasNet = NetworkItemCache.hasNetwork();
-                int v = (isHoveredOrFocused() && hasNet) ? 229 : 211;
-                g.blit(taczTex, getX(), getY(), 18, 18, 149, v, 18, 18, 256, 256);
-                if (!hasNet) {
-                    g.fill(getX(), getY(), getX() + 18, getY() + 18, 0xAA000000);
-                }
-                var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
-                        ResourceLocation.tryBuild("beyonddimensions", "net_creater"));
-                if (item != null && item != net.minecraft.world.item.Items.AIR) {
-                    g.pose().pushPose();
-                    g.pose().translate(getX() + 1, getY() + 1, 0);
-                    g.renderItem(new net.minecraft.world.item.ItemStack(item), 0, 0);
-                    g.pose().popPose();
-                }
-                if (hasNet && isHoveredOrFocused()) {
-                    String tip;
-                    if (Screen.hasShiftDown()) {
-                        tip = "Shift: 最大合成";
-                    } else if (Screen.hasControlDown()) {
-                        tip = "Ctrl: 合成×10";
-                    } else {
-                        tip = "网络合成";
-                    }
-                    g.renderTooltip(Minecraft.getInstance().font, Component.literal(tip), mx, my);
-                }
-                if (!hasNet && isHoveredOrFocused()) {
-                    g.renderTooltip(Minecraft.getInstance().font,
-                            Component.literal("§c无网络"),
-                            mx, my);
-                }
-            }
-        };
+    @Unique
+    private boolean beyond$outputToNetwork = false;
+    @Unique
+    private int beyond$netVersion = -1;
+    @Unique
+    private Button beyond$outputBtn;
 
+
+    @Unique
+    private static final ResourceLocation beyond$tex =
+            ResourceLocation.tryParse("tacz:textures/gui/gun_smith_table.png");
+
+    @Unique
+    private void beyond$drawButton(GuiGraphics g, int x, int y, int mx, int my, ItemStack icon) {
+        boolean hover = mx >= x && mx < x + 18 && my >= y && my < y + 18;
+        int v = hover ? 164 + 18 : 164;
+        g.blit(beyond$tex, x, y, 18, 18, 138, v, 48, 18, 256, 256);
+        if (!icon.isEmpty()) g.renderFakeItem(icon, x + 1, y + 1);
+    }
+    @Unique
+    private static java.io.File beyond$prefsFile;
+
+    @Unique
+    private void beyond$loadPrefs() {
         try {
-            var addM = net.minecraft.client.gui.screens.Screen.class.getDeclaredMethod("addRenderableWidget", net.minecraft.client.gui.components.AbstractWidget.class);
-            addM.setAccessible(true);
-            addM.invoke(screen, btn);
-        } catch (Exception e) {
-            try {
-                var rField = net.minecraft.client.gui.screens.Screen.class.getDeclaredField("renderables");
-                rField.setAccessible(true);
-                var renderables = (java.util.List) rField.get(screen);
-                renderables.add(btn);
-                var cField = net.minecraft.client.gui.screens.Screen.class.getDeclaredField("children");
-                cField.setAccessible(true);
-                var children = (java.util.List) cField.get(screen);
-                children.add(btn);
-            } catch (Exception ignored) {}
+            if (beyond$prefsFile == null) beyond$prefsFile = new java.io.File(
+                    Minecraft.getInstance().gameDirectory, "config/beyond_cmd_extension_gui.properties");
+            if (beyond$prefsFile.exists()) {
+                var props = new java.util.Properties();
+                try (var in = new java.io.FileInputStream(beyond$prefsFile)) {
+                    props.load(in);
+                    beyond$useNetwork = Boolean.parseBoolean(props.getProperty("useNetwork", "true"));
+                    beyond$outputToNetwork = Boolean.parseBoolean(props.getProperty("outputToNetwork", "false"));
+                }
+            }
+        } catch (Exception ignored) {
         }
     }
 
-    @Inject(method = "getPlayerIngredientCount", at = @At("RETURN"), remap = false)
-    private void addNetworkCounts(GunSmithTableRecipe recipe, CallbackInfo ci) {
-        if (NetworkItemCache.isEmpty()) return;
-        String recipeKey = recipe.getId().toString();
-        var ingredients = recipe.getInputs();
-        for (int i = 0; i < ingredients.size(); i++) {
-            var ingredient = ingredients.get(i).getIngredient();
-            String exactKey = recipeKey + "|" + i;
-            long exact = NetworkItemCache.getCount(exactKey);
-            if (exact > 0) {
-                long total = (long) playerIngredientCount.get(i) + exact;
-                playerIngredientCount.put(i, (int) Math.min(total, Integer.MAX_VALUE));
-                continue;
+    @Unique
+    private void beyond$savePrefs() {
+        try {
+            if (beyond$prefsFile == null) beyond$prefsFile = new java.io.File(
+                    Minecraft.getInstance().gameDirectory, "config/beyond_cmd_extension_gui.properties");
+            beyond$prefsFile.getParentFile().mkdirs();
+            var props = new java.util.Properties();
+            props.setProperty("useNetwork", String.valueOf(beyond$useNetwork));
+            props.setProperty("outputToNetwork", String.valueOf(beyond$outputToNetwork));
+            try (var out = new java.io.FileOutputStream(beyond$prefsFile)) {
+                props.store(out, "Beyond Cmd Extension GUI Preferences");
             }
+        } catch (Exception ignored) {
+        }
+    }
 
-            boolean hasNbt = false;
-            for (ItemStack m : ingredient.getItems()) {
-                if (!m.isEmpty() && m.hasTag() && !m.getTag().isEmpty()) {
-                    hasNbt = true;
-                    break;
-                }
-            }
-            if (hasNbt) continue;
+    @Inject(method = "onClose", at = @At("HEAD"), remap = true)
+    private void onScreenClose(CallbackInfo ci) {
+        beyond$savePrefs();
+    }
 
-            long extra = 0;
-            for (ItemStack match : ingredient.getItems()) {
-                if (match.isEmpty()) continue;
-                extra += NetworkItemCache.getCount(match.getItem().toString());
-            }
-            if (extra > 0) {
-                long total = (long) playerIngredientCount.get(i) + extra;
-                playerIngredientCount.put(i, (int) Math.min(total, Integer.MAX_VALUE));
+    @Unique
+    private int[] beyond$cachedNetworkCounts;
+    @Unique
+    private String beyond$lastRecipeKey;
+
+    @Unique
+    private static ItemStack beyond$debugIcon = ItemStack.EMPTY;
+
+    @Unique
+    private static boolean beyond$isTaczAddonLoaded() {
+        if (!beyond$compatChecked) {
+            beyond$compatChecked = true;
+            try {
+                beyond$hasTaczAddon = ModList.get() != null && ModList.get().isLoaded("taczaddon");
+            } catch (Exception e) {
+                beyond$hasTaczAddon = false;
             }
         }
+        return beyond$hasTaczAddon;
+    }
+
+    @Unique
+    private static void beyond$initIcons() {
+        if (!beyond$debugIcon.isEmpty()) return;
+        try {
+            var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse("beyonddimensions:net_creater"));
+            if (item != null) beyond$debugIcon = new ItemStack(item);
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Inject(method = "render", at = @At("TAIL"), remap = true)
+    private void onRenderTick(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+        if (!beyond$loaded) {
+            beyond$loaded = true;
+            beyond$loadPrefs();
+        }
+
+        beyond$initIcons();
+        var self = (GunSmithTableScreen) (Object) this;
+        var font = Minecraft.getInstance().font;
+        int left = self.getGuiLeft(), top = self.getGuiTop();
+
+        // ---- 网络状态文字 ----
+        int netColor;
+        Component netText;
+        if (NetworkItemCache.hasNetwork()) {
+            int id = NetworkItemCache.getNetId();
+            netText = Component.translatable("gui.beyond_cmd_extension.network.connected", id >= 0 ? id : "?");
+            netColor = 0x55FFFF;
+        } else {
+            netText = Component.translatable("gui.beyond_cmd_extension.network.none");
+            netColor = 0x888888;
+        }
+        graphics.drawString(font, netText, left + 254, top + 33, netColor, false);
+
+        // ---- 模式切换按钮 ----
+        {
+            if (beyond$isTaczAddonLoaded()) {
+                var modeIcon = beyond$useNetwork
+                        ? new ItemStack(net.minecraft.world.item.Items.ENDER_EYE)
+                        : new ItemStack(net.minecraft.world.item.Items.CRAFTING_TABLE);
+                beyond$drawButton(graphics, left + 322, top + 50, mouseX, mouseY, modeIcon);
+            }
+
+            // ---- 输出切换按钮 ----
+            if (beyond$useNetwork) {
+                var outIcon = beyond$outputToNetwork ? beyond$debugIcon : new ItemStack(net.minecraft.world.item.Items.CHEST);
+                beyond$drawButton(graphics, left + 267, top + 162, mouseX, mouseY, outIcon);
+            }
+        }
+    }
+
+    @Inject(method = "renderIngredient", at = @At("RETURN"))
+    private void onRenderIngredient(GuiGraphics graphics, CallbackInfo ci) {
+        if (!beyond$useNetwork) return;
+        if (!NetworkItemCache.hasNetwork()) return;
+        if (selectedRecipe == null) return;
+        var inputs = selectedRecipe.getInputs();
+        if (inputs == null || inputs.isEmpty()) return;
+
+        int netVer = NetworkItemCache.getVersion();
+        if (beyond$cachedNetworkCounts == null || beyond$netVersion != netVer) {
+            if (NetworkItemCache.isEmpty()) return;
+            beyond$netVersion = netVer;
+            beyond$cachedNetworkCounts = calcNetworkCounts(selectedRecipe);
+            beyond$lastRecipeKey = selectedRecipe.getId().toString();
+        }
+
+        var font = Minecraft.getInstance().font;
+        var screen = (GunSmithTableScreen) (Object) this;
+        int idx = 0;
+        for (int i = 0; i < 6 && idx < inputs.size(); i++) {
+            for (int j = 0; j < 2 && idx < inputs.size(); j++) {
+                if (idx >= beyond$cachedNetworkCounts.length) break;
+                int netCount = beyond$cachedNetworkCounts[idx];
+                if (netCount > 0) {
+                    int offsetX = screen.getGuiLeft() + 254 + 45 * j;
+                    int offsetY = screen.getGuiTop() + 62 + 17 * i;
+                    var pose = graphics.pose();
+                    pose.pushPose();
+                    pose.translate(0, 0, 250);
+                    pose.scale(0.5f, 0.5f, 1);
+                    graphics.drawString(font, "+" + netCount, (offsetX + 17) * 2, (offsetY + 5) * 2, 0x55FFFF, false);
+                    pose.popPose();
+                }
+                idx++;
+            }
+        }
+    }
+
+    @Inject(method = "getPlayerIngredientCount", at = @At("RETURN"))
+    private void addNetworkCounts(GunSmithTableRecipe recipe, CallbackInfo ci) {
+        if (!beyond$useNetwork) return;
+        if (recipe == null || playerIngredientCount == null) return;
+
+        PacketHandler.sendToServer(new RequestNetworkItemsPacket());
+
+        if (ModList.get().isLoaded("taczaddon")) {
+            var player = Minecraft.getInstance().player;
+            if (player != null) {
+                var realInv = player.getInventory();
+                var inputs = recipe.getInputs();
+                if (inputs != null) {
+                    int size = Math.min(inputs.size(), playerIngredientCount.size());
+                    for (int i = 0; i < size; i++) {
+                        var ing = inputs.get(i).getIngredient();
+                        int realCount = 0;
+                        for (var stack : realInv.items) {
+                            if (!stack.isEmpty() && ing.test(stack)) realCount += stack.getCount();
+                        }
+                        playerIngredientCount.put(i, realCount);
+                    }
+                }
+            }
+        }
+
+        if (!NetworkItemCache.hasNetwork()) return;
+        if (NetworkItemCache.isEmpty()) return;
+
+        int netVer = NetworkItemCache.getVersion();
+        String recipeKey = recipe.getId().toString();
+        boolean cacheStale = !recipeKey.equals(beyond$lastRecipeKey) || beyond$netVersion != netVer;
+
+        if (cacheStale) {
+            beyond$netVersion = netVer;
+            beyond$lastRecipeKey = recipeKey;
+            beyond$cachedNetworkCounts = calcNetworkCounts(recipe);
+        }
+
+        int max = Math.min(beyond$cachedNetworkCounts.length, playerIngredientCount.size());
+        for (int i = 0; i < max; i++) {
+            int net = beyond$cachedNetworkCounts[i];
+            if (net > 0) {
+                long before = playerIngredientCount.get(i);
+                long after = Math.min(before + net, Integer.MAX_VALUE);
+                playerIngredientCount.put(i, (int) after);
+            }
+        }
+    }
+
+    @Inject(method = "addCraftButton", at = @At("TAIL"))
+    private void onAddCraftButton(CallbackInfo ci) {
+        var self = (GunSmithTableScreen) (Object) this;
+        int left = self.getGuiLeft(), top = self.getGuiTop();
+
+        if (beyond$isTaczAddonLoaded()) {
+            var modeBtn = addRenderableWidget(Button.builder(Component.empty(), b -> {
+                beyond$useNetwork = !beyond$useNetwork;
+                if (beyond$outputBtn != null) beyond$outputBtn.visible = beyond$useNetwork;
+                if (selectedRecipe != null) getPlayerIngredientCount(selectedRecipe);
+                b.setTooltip(Tooltip.create(Component.translatable(
+                        beyond$useNetwork ? "gui.beyond_cmd_extension.mode.network" : "gui.beyond_cmd_extension.mode.vanilla")));
+            }).bounds(left + 322, top + 50, 18, 18).build());
+            modeBtn.setTooltip(Tooltip.create(Component.translatable("gui.beyond_cmd_extension.mode.network")));
+        }
+
+        beyond$outputBtn = addRenderableWidget(Button.builder(Component.empty(), b -> {
+            beyond$outputToNetwork = !beyond$outputToNetwork;
+            b.setTooltip(Tooltip.create(Component.translatable(beyond$outputToNetwork
+                    ? "gui.beyond_cmd_extension.output.network"
+                    : "gui.beyond_cmd_extension.output.inventory",
+                    NetworkItemCache.getNetId() >= 0 ? NetworkItemCache.getNetId() : "?")));
+        }).bounds(left + 267, top + 162, 18, 18).build());
+        beyond$outputBtn.setTooltip(Tooltip.create(Component.translatable(beyond$outputToNetwork
+                ? "gui.beyond_cmd_extension.output.network"
+                : "gui.beyond_cmd_extension.output.inventory",
+                NetworkItemCache.getNetId() >= 0 ? NetworkItemCache.getNetId() : "?")));
+        beyond$outputBtn.visible = beyond$useNetwork;
+    }
+
+    @Redirect(method = "lambda$addCraftButton$5", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/network/simple/SimpleChannel;sendToServer(Ljava/lang/Object;)V"))
+    private void redirectCraft(SimpleChannel channel, Object message) {
+        if (!beyond$useNetwork) {
+            channel.sendToServer(message);
+            return;
+        }
+        int count = Screen.hasShiftDown() ? 64 : 1;
+        PacketHandler.sendToServer(new TaczCraftPacket(selectedRecipe.getId(), count, beyond$outputToNetwork));
+    }
+
+    @Unique
+    private int[] calcNetworkCounts(GunSmithTableRecipe recipe) {
+        var inputs = recipe.getInputs();
+        if (inputs == null || inputs.isEmpty()) return new int[0];
+        int size = inputs.size();
+        int[] counts = new int[size];
+        for (int i = 0; i < size; i++) {
+            String key = recipe.getId().toString() + "|" + i;
+            long raw = NetworkItemCache.getCount(key);
+            counts[i] = (int) Math.min(raw, Integer.MAX_VALUE);
+        }
+        return counts;
     }
 }

@@ -3,36 +3,52 @@ package com.solr98.beyondcmdextension.network;
 import com.solr98.beyondcmdextension.client.AmmoCountCache;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkEvent;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class AmmoCountResponsePacket {
 
     private final ResourceLocation ammoId;
-    private final int count;
+    private final Map<Integer, Integer> networkCounts;
+    private final boolean quick;
 
-    public AmmoCountResponsePacket(ResourceLocation ammoId, int count) {
+    public AmmoCountResponsePacket(ResourceLocation ammoId, Map<Integer, Integer> networkCounts, boolean quick) {
         this.ammoId = ammoId;
-        this.count = count;
+        this.networkCounts = networkCounts;
+        this.quick = quick;
     }
 
     public static void encode(AmmoCountResponsePacket msg, FriendlyByteBuf buf) {
         buf.writeResourceLocation(msg.ammoId);
-        buf.writeVarInt(msg.count);
+        buf.writeBoolean(msg.quick);
+        buf.writeVarInt(msg.networkCounts.size());
+        for (var entry : msg.networkCounts.entrySet()) {
+            buf.writeVarInt(entry.getKey());
+            buf.writeVarInt(entry.getValue());
+        }
     }
 
     public static AmmoCountResponsePacket decode(FriendlyByteBuf buf) {
-        return new AmmoCountResponsePacket(buf.readResourceLocation(), buf.readVarInt());
+        ResourceLocation ammoId = buf.readResourceLocation();
+        boolean quick = buf.readBoolean();
+        int size = buf.readVarInt();
+        Map<Integer, Integer> networkCounts = new LinkedHashMap<>(size);
+        for (int i = 0; i < size; i++) {
+            int netId = buf.readVarInt();
+            int count = buf.readVarInt();
+            networkCounts.put(netId, count);
+        }
+        return new AmmoCountResponsePacket(ammoId, networkCounts, quick);
     }
 
     public static void handle(AmmoCountResponsePacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                AmmoCountCache.update(msg.ammoId, msg.count)
-            );
+            if (ctx.get().getDirection().getReceptionSide().isClient()) {
+                AmmoCountCache.update(msg.ammoId, msg.networkCounts, msg.quick);
+            }
         });
         ctx.get().setPacketHandled(true);
     }

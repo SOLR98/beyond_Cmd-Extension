@@ -146,6 +146,10 @@ public class Config {
             .comment("Maximum recursion depth for recipe tree resolution")
             .defineInRange("craftMaxDepth", 6, 1, 20);
 
+    private static final ForgeConfigSpec.BooleanValue BLOCK_BD_CONTAINER_READER = BUILDER
+            .comment("Block TacZAddon from reading BeyondDimensions storage blocks as surrounding containers")
+            .define("blockBdContainerReader", true);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static boolean logDirtBlock;
@@ -163,6 +167,7 @@ public class Config {
     public static List<? extends String> itemBlacklist;
     public static int craftCooldownMs;
     public static int craftMaxDepth;
+    public static boolean blockBdContainerReader;
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -181,5 +186,6 @@ public class Config {
         itemBlacklist = ITEM_BLACKLIST.get();
         craftCooldownMs = CRAFT_COOLDOWN_MS.get();
         craftMaxDepth = CRAFT_MAX_DEPTH.get();
+        blockBdContainerReader = BLOCK_BD_CONTAINER_READER.get();
     }
 }

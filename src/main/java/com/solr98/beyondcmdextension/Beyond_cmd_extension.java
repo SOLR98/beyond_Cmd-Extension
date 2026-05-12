@@ -1,17 +1,29 @@
 package com.solr98.beyondcmdextension;
 
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.fml.ModList;
+import com.wintercogs.beyonddimensions.common.item.NetedItem;
+import org.slf4j.Logger;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.slf4j.Logger;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.lang.reflect.Method;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Beyond_cmd_extension.MODID)
@@ -40,23 +52,12 @@ public class Beyond_cmd_extension {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        // Some common setup code
-        LOGGER.info("HELLO FROM COMMON SETUP");
-
-        if (Config.logDirtBlock) LOGGER.info("DIRT BLOCK >> {}");
-
-        LOGGER.info(Config.magicNumberIntroduction + Config.magicNumber);
-        
-        // Register enchantment book separator handler
         registerEnchantmentBookSeparator();
-        // Register item blacklist handler
         registerItemBlacklistHandler();
-        // Register ammo box extract handler (only if TACZ is loaded)
         registerAmmoBoxExtractHandler();
-        // Register network packets
         com.solr98.beyondcmdextension.network.PacketHandler.register();
     }
-    
+
     private void registerEnchantmentBookSeparator() {
         com.wintercogs.beyonddimensions.api.dimensionnet.helper.UnifiedStorageBeforeInsertHandler
                 .addHandler(new com.solr98.beyondcmdextension.handler.EnchantmentBookSeparatorHandler());
@@ -82,5 +83,42 @@ public class Beyond_cmd_extension {
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
         LOGGER.info("HELLO from server starting");
+    }
+
+    @SubscribeEvent
+    public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        Level level = event.getLevel();
+        BlockPos pos = event.getPos();
+        BlockState state = level.getBlockState(pos);
+        ResourceLocation blockId = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+        if (blockId == null || !"sentrymechanicalarm".equals(blockId.getNamespace())) return;
+
+        Player player = event.getEntity();
+        ItemStack stack = player.getItemInHand(event.getHand());
+        if (stack.isEmpty() || NetedItem.getNetId(stack) < 0) return;
+
+        event.setCanceled(true);
+
+        if (event.getSide().isClient()) return;
+
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be == null) return;
+
+        try {
+            Method getHeld = be.getClass().getMethod("getHeldItem");
+            ItemStack held = (ItemStack) getHeld.invoke(be);
+            if (held.isEmpty()) {
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.beyond_cmd_extension.sentry_no_gun"), true);
+                return;
+            }
+
+            Method addBox = be.getClass().getMethod("addAmmoBox", ItemStack.class);
+            boolean ok = (boolean) addBox.invoke(be, stack);
+            if (ok) {
+                if (!player.isCreative()) stack.shrink(1);
+            } else {
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatable("sentry.tooltip.ammobox_1"), true);
+            }
+        } catch (Exception ignored) {}
     }
 }

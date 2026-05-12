@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class CraftToast implements Toast {
 
-    private static final ResourceLocation TOAST_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/toasts.png");
+    private static final ResourceLocation TOAST_TEXTURE = new ResourceLocation("minecraft", "textures/gui/toasts.png");
 
     private final ItemStack result;
     private final int count;

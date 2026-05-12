@@ -4,14 +4,17 @@
   "package": "com.solr98.beyondcmdextension.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "beyond_cmd_extension.refmap.json",
+  "plugin": "com.solr98.beyondcmdextension.mixin.MixinPlugin",
   "mixins": [
     "AbstractGunItemMixin",
-    "ModernKineticGunScriptAPIMixin"
+    "ModernKineticGunScriptAPIMixin",
+    "SentryArmBlockMixin",
+    "SentryArmReloadMixin",
+    "SentryFakePlayerSyncMixin"
   ],
   "client": [
     "GunAnimationStateContextMixin",
     "GunHudOverlayMixin",
     "GunSmithTableScreenMixin"
-  ],
-  "server": []
+  ]
 }

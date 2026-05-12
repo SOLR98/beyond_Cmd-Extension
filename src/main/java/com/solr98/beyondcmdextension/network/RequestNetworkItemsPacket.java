@@ -39,24 +39,20 @@ public class RequestNetworkItemsPacket {
 
             DimensionsNet net = DimensionsNet.getPrimaryNetFromPlayer(player);
             if (net == null) {
-                PacketHandler.sendToPlayer(player, new NetworkItemCountsPacket(new HashMap<>(), true, false));
+                PacketHandler.sendToPlayer(player, new NetworkItemCountsPacket(new HashMap<>(), true, false, -1));
                 return;
             }
 
             if (!INDEX_BUILT) buildIndex(player);
 
-            long t1 = System.nanoTime();
             Map<String, Long> counts = scanNetworkItems(net);
-            long t2 = System.nanoTime();
-            com.mojang.logging.LogUtils.getLogger().info("TACZ perf: initial scan {} µs",
-                    (t2 - t1) / 1000);
 
-            PacketHandler.sendToPlayer(player, new NetworkItemCountsPacket(counts, true));
+            PacketHandler.sendToPlayer(player, new NetworkItemCountsPacket(counts, true, true, net.getId()));
         });
         ctx.get().setPacketHandled(true);
     }
 
-    static Map<String, Long> scanNetworkItems(DimensionsNet net) {
+    public static Map<String, Long> scanNetworkItems(DimensionsNet net) {
         Map<String, Long> counts = new HashMap<>();
         net.getUnifiedStorage().getBucket(ItemStackKey.ID).ifPresent(bucket -> {
             for (int i = 0; i < bucket.size(); i++) {
@@ -66,14 +62,11 @@ public class RequestNetworkItemsPacket {
                 if (amount <= 0) continue;
                 ItemStack stored = ik.getReadOnlyStack();
                 if (stored.isEmpty()) continue;
-                String itemId = stored.getItem().toString();
-                counts.merge(itemId, amount, Long::sum);
-                List<TaczIngredient> related = TACZ_INDEX.get(itemId);
+                List<TaczIngredient> related = TACZ_INDEX.get(stored.getItem().toString());
                 if (related != null) {
                     for (var ti : related) {
-                        if (ti.hasNbt() && ti.ingredient().test(stored)) {
-                            String exactKey = ti.recipeId() + "|" + ti.idx();
-                            counts.merge(exactKey, amount, Long::sum);
+                        if (ti.ingredient().test(stored)) {
+                            counts.merge(ti.recipeId() + "|" + ti.idx(), amount, Long::sum);
                         }
                     }
                 }

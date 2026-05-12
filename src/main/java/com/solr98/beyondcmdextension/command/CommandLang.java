@@ -501,6 +501,10 @@ public class CommandLang
         register("network.info.no_players",
                 CommandConfig.Language.EN_US, "No players",
                 CommandConfig.Language.ZH_CN, "无玩家");
+
+        register("network.info.no_resources",
+                CommandConfig.Language.EN_US, "  No resources",
+                CommandConfig.Language.ZH_CN, "  无资源");
         
         // NBT大小信息（OP手动触发）
         register("network.info.nbt_section_title",

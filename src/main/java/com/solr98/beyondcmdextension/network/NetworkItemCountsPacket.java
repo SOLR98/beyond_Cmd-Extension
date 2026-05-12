@@ -16,26 +16,32 @@ public class NetworkItemCountsPacket {
     private final Map<String, Long> counts;
     private final boolean replace;
     private final boolean hasNetwork;
+    private final int netId;
     private final ItemStack resultItem;
     private final int resultCount;
 
     public NetworkItemCountsPacket(Map<String, Long> counts) {
-        this(counts, false, true, ItemStack.EMPTY, 0);
+        this(counts, false, true, -1, ItemStack.EMPTY, 0);
     }
 
     public NetworkItemCountsPacket(Map<String, Long> counts, boolean replace) {
-        this(counts, replace, true, ItemStack.EMPTY, 0);
+        this(counts, replace, true, -1, ItemStack.EMPTY, 0);
     }
 
     public NetworkItemCountsPacket(Map<String, Long> counts, boolean replace, boolean hasNetwork) {
-        this(counts, replace, hasNetwork, ItemStack.EMPTY, 0);
+        this(counts, replace, hasNetwork, -1, ItemStack.EMPTY, 0);
     }
 
-    public NetworkItemCountsPacket(Map<String, Long> counts, boolean replace, boolean hasNetwork,
-                                   ItemStack resultItem, int resultCount) {
+    public NetworkItemCountsPacket(Map<String, Long> counts, boolean replace, boolean hasNetwork, int netId) {
+        this(counts, replace, hasNetwork, netId, ItemStack.EMPTY, 0);
+    }
+
+    public NetworkItemCountsPacket(Map<String, Long> counts, boolean replace, boolean hasNetwork, int netId,
+                                    ItemStack resultItem, int resultCount) {
         this.counts = counts;
         this.replace = replace;
         this.hasNetwork = hasNetwork;
+        this.netId = netId;
         this.resultItem = resultItem;
         this.resultCount = resultCount;
     }
@@ -43,6 +49,7 @@ public class NetworkItemCountsPacket {
     public static void encode(NetworkItemCountsPacket msg, FriendlyByteBuf buf) {
         buf.writeBoolean(msg.replace);
         buf.writeBoolean(msg.hasNetwork);
+        buf.writeVarInt(msg.netId);
         buf.writeVarInt(msg.counts.size());
         for (var e : msg.counts.entrySet()) {
             buf.writeUtf(e.getKey());
@@ -59,6 +66,7 @@ public class NetworkItemCountsPacket {
     public static NetworkItemCountsPacket decode(FriendlyByteBuf buf) {
         boolean replace = buf.readBoolean();
         boolean hasNetwork = buf.readBoolean();
+        int netId = buf.readVarInt();
         int size = buf.readVarInt();
         Map<String, Long> counts = new HashMap<>();
         for (int i = 0; i < size; i++) {
@@ -67,18 +75,18 @@ public class NetworkItemCountsPacket {
         boolean hasResult = buf.readBoolean();
         ItemStack resultItem = hasResult ? buf.readItem() : ItemStack.EMPTY;
         int resultCount = hasResult ? buf.readVarInt() : 0;
-        return new NetworkItemCountsPacket(counts, replace, hasNetwork, resultItem, resultCount);
+        return new NetworkItemCountsPacket(counts, replace, hasNetwork, netId, resultItem, resultCount);
     }
 
     public static void handle(NetworkItemCountsPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             if (!msg.hasNetwork) {
-                NetworkItemCache.setAll(msg.counts, false);
+                NetworkItemCache.setAll(msg.counts, false, msg.netId);
                 Minecraft.getInstance().player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§c你没有维度网络"), true);
+                    net.minecraft.network.chat.Component.translatable("message.beyond_cmd_extension.no_network"), true);
                 return;
             }
-            NetworkItemCache.setAll(msg.counts, true);
+            NetworkItemCache.setAll(msg.counts, true, msg.netId);
             if (!msg.resultItem.isEmpty()) {
                 CraftToast.show(msg.resultItem, msg.resultCount);
             }

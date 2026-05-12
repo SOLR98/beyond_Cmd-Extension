@@ -19,7 +19,7 @@ public class PermissionChecker {
         ServerPlayer player = source.getPlayerOrException();
         if (player == null) {
             source.sendFailure(CommandLang.component("error.player_required"));
-            throw new CommandSyntaxException(null, net.minecraft.network.chat.Component.literal("此命令必须由玩家执行"));
+            throw new CommandSyntaxException(null, CommandLang.component("error.player_required"));
         }
         return player;
     }

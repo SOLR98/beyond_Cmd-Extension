@@ -21,23 +21,30 @@ public class TaczCraftPacket {
 
     private final ResourceLocation recipeId;
     private final int count;
+    private final boolean toNetwork;
 
     public TaczCraftPacket(ResourceLocation recipeId) {
-        this(recipeId, 1);
+        this(recipeId, 1, false);
     }
 
     public TaczCraftPacket(ResourceLocation recipeId, int count) {
+        this(recipeId, count, false);
+    }
+
+    public TaczCraftPacket(ResourceLocation recipeId, int count, boolean toNetwork) {
         this.recipeId = recipeId;
         this.count = count;
+        this.toNetwork = toNetwork;
     }
 
     public static void encode(TaczCraftPacket msg, FriendlyByteBuf buf) {
         buf.writeResourceLocation(msg.recipeId);
         buf.writeVarInt(msg.count);
+        buf.writeBoolean(msg.toNetwork);
     }
 
     public static TaczCraftPacket decode(FriendlyByteBuf buf) {
-        return new TaczCraftPacket(buf.readResourceLocation(), buf.readVarInt());
+        return new TaczCraftPacket(buf.readResourceLocation(), buf.readVarInt(), buf.readBoolean());
     }
 
     public static void handle(TaczCraftPacket msg, Supplier<NetworkEvent.Context> ctx) {
@@ -47,7 +54,7 @@ public class TaczCraftPacket {
 
             DimensionsNet net = DimensionsNet.getPrimaryNetFromPlayer(player);
             if (net == null) {
-                player.sendSystemMessage(Component.literal("§c你没有维度网络"));
+                player.sendSystemMessage(Component.translatable("message.beyond_cmd_extension.no_network"));
                 return;
             }
 
@@ -58,8 +65,6 @@ public class TaczCraftPacket {
             if (!(recipe instanceof GunSmithTableRecipe taczRecipe)) return;
             List<GunSmithTableIngredient> inputs = taczRecipe.getInputs();
             if (inputs == null || inputs.isEmpty()) return;
-
-            long craftStart = System.nanoTime();
 
             RequestNetworkItemsPacket.ensureIndex(player);
             Map<String, Long> idCounts = new HashMap<>();
@@ -161,7 +166,8 @@ public class TaczCraftPacket {
                     if (inInv + inNet < need) {
                         if (missing == null) {
                             ItemStack ex = ing.getItems().length > 0 ? ing.getItems()[0] : ItemStack.EMPTY;
-                            missing = "§c材料不足：" + (ex.isEmpty() ? "未知" : ex.getHoverName().getString());
+                            missing = Component.translatable("message.beyond_cmd_extension.material_insufficient",
+                                    ex.isEmpty() ? Component.translatable("command.beyond_cmd_extension.error.unknown") : ex.getHoverName()).getString();
                         }
                     }
                 }
@@ -227,16 +233,19 @@ public class TaczCraftPacket {
 
                 ItemStack result = recipe.getResultItem(player.level().registryAccess());
                 if (!result.isEmpty()) {
-                    var entity = new net.minecraft.world.entity.item.ItemEntity(
-                            player.level(), player.getX(), player.getY() + 0.5, player.getZ(), result.copy());
-                    entity.setPickUpDelay(0);
-                    player.level().addFreshEntity(entity);
+                    if (msg.toNetwork) {
+                        ItemStackKey resultKey = new ItemStackKey(result);
+                        net.getUnifiedStorage().insert(resultKey, result.getCount(), false);
+                    } else {
+                        var entity = new net.minecraft.world.entity.item.ItemEntity(
+                                player.level(), player.getX(), player.getY() + 0.5, player.getZ(), result.copy());
+                        entity.setPickUpDelay(0);
+                        player.level().addFreshEntity(entity);
+                    }
                 }
 
                 crafted++;
             }
-
-            long craftEnd = System.nanoTime();
 
             if (player.containerMenu instanceof com.tacz.guns.inventory.GunSmithTableMenu menu) {
                 player.inventoryMenu.broadcastFullState();
@@ -244,16 +253,13 @@ public class TaczCraftPacket {
                         new com.tacz.guns.network.message.ServerMessageCraft(menu.containerId), player);
             }
 
-            long r1 = System.nanoTime();
             for (var e : exactCounts.entrySet()) {
                 idCounts.put(e.getKey(), e.getValue());
             }
             idCounts.values().removeIf(v -> v <= 0);
-            long r2 = System.nanoTime();
             ItemStack toastItem = crafted > 0 ? recipe.getResultItem(player.level().registryAccess()) : ItemStack.EMPTY;
-            PacketHandler.sendToPlayer(player, new NetworkItemCountsPacket(idCounts, true, true, toastItem, crafted));
-            com.mojang.logging.LogUtils.getLogger().info("TACZ perf: craft={}µs  x{}  refresh={}µs",
-                    (craftEnd - craftStart) / 1000, crafted, (r2 - r1) / 1000);
+            PacketHandler.sendToPlayer(player, new NetworkItemCountsPacket(idCounts, true, true,
+                    net != null ? net.getId() : -1, toastItem, crafted));
         });
         ctx.get().setPacketHandled(true);
     }

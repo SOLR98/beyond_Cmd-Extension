@@ -160,7 +160,7 @@ public class NetworkToolsCommand {
         }
         
         // 获取网络终端物品
-        Item terminalItem = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(BDConstants.MODID, BDItemIds.NET_TERMINAL_ITEM));
+        Item terminalItem = BuiltInRegistries.ITEM.get(new ResourceLocation(BDConstants.MODID, BDItemIds.NET_TERMINAL_ITEM));
         if (terminalItem == null || terminalItem == Items.AIR) {
             source.sendFailure(OutputFormatter.createError("error.item_not_found"));
             return 0;

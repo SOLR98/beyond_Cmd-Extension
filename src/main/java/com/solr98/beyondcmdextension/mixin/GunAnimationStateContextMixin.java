@@ -22,7 +22,8 @@ public class GunAnimationStateContextMixin {
         if (cir.getReturnValue()) return;
         ResourceLocation ammoId = NetworkAmmoExtractor.getAmmoIdClient(currentGunItem);
         if (ammoId == null) return;
-        if (AmmoCountCache.getCount(ammoId) > 0) {
+        AmmoCountCache.requestQuick(ammoId);
+        if (!AmmoCountCache.hasData(ammoId) || AmmoCountCache.getCount(ammoId) > 0) {
             cir.setReturnValue(true);
         }
     }

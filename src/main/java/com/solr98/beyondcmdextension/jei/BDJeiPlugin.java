@@ -10,6 +10,6 @@ public class BDJeiPlugin implements IModPlugin {
 
     @Override
     public ResourceLocation getPluginUid() {
-        return ResourceLocation.fromNamespaceAndPath(Beyond_cmd_extension.MODID, "jei_plugin");
+        return new ResourceLocation(Beyond_cmd_extension.MODID, "jei_plugin");
     }
 }

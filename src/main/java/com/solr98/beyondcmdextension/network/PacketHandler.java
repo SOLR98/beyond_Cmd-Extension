@@ -14,7 +14,7 @@ public class PacketHandler {
     private static int id = 0;
 
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-            ResourceLocation.fromNamespaceAndPath(Beyond_cmd_extension.MODID, "main"),
+            new ResourceLocation(Beyond_cmd_extension.MODID, "main"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals

@@ -38,5 +38,18 @@
   "command.beyond_cmd_extension.network.list.page": "第 %s 页",
   "command.beyond_cmd_extension.network.list.previous": "◀ 上一页",
   "command.beyond_cmd_extension.network.list.next": "下一页 ▶",
-  "command.beyond_cmd_extension.network.list.page_with_total": "第 %s/%s 页 (总计: %s 个网络)"
+  "command.beyond_cmd_extension.network.list.page_with_total": "第 %s/%s 页 (总计: %s 个网络)",
+  "gui.beyond_cmd_extension.mode.network": "当前: 网络模式\n点击切换至原版",
+  "gui.beyond_cmd_extension.mode.vanilla": "当前: 原版模式\n点击切换至网络",
+  "gui.beyond_cmd_extension.output.inventory": "输出至背包",
+  "gui.beyond_cmd_extension.output.network": "输出至网络 #%s",
+  "gui.beyond_cmd_extension.network.connected": "网络 #%s",
+  "gui.beyond_cmd_extension.network.none": "无网络连接",
+  "message.beyond_cmd_extension.no_network": "§c你没有维度网络",
+  "message.beyond_cmd_extension.sentry_no_gun": "§c哨兵上没有安装枪械",
+  "message.beyond_cmd_extension.network_no_ammo": "网络 §b%s§r 内没有可用的弹药",
+  "message.beyond_cmd_extension.material_insufficient": "§c材料不足：%s",
+  "command.beyond_cmd_extension.error.unknown": "未知",
+  "hud.beyond_cmd_extension.network_ammo": "网络#%s : %s",
+  "hud.beyond_cmd_extension.network_ammo.infinite": "网络#%s : ∞"
 }
